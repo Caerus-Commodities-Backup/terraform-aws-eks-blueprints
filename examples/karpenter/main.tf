@@ -41,8 +41,8 @@ data "aws_ecrpublic_authorization_token" "token" {
 data "aws_availability_zones" "available" {}
 
 locals {
-  name   = basename(path.cwd)
-  region = "us-west-2"
+  name   = "caerus"
+  region = "us-east-2"
 
   vpc_cidr = "10.0.0.0/16"
   azs      = slice(data.aws_availability_zones.available.names, 0, 3)
@@ -63,7 +63,7 @@ module "eks" {
   version = "~> 19.5"
 
   cluster_name                   = local.name
-  cluster_version                = "1.24"
+  cluster_version                = "1.23"
   cluster_endpoint_public_access = true
 
   cluster_addons = {
@@ -179,7 +179,33 @@ module "eks_blueprints_kubernetes_addons" {
   karpenter_enable_spot_termination_handling = true
   karpenter_sqs_queue_arn                    = module.karpenter.queue_arn
 
+  # ---------------------------------------
+  
+  # added by ksm
+  enable_kuberay_operator             = true
+  enable_ingress_nginx                = true
+  enable_aws_load_balancer_controller = true
+  
+  # -----------------------------------------
+
   tags = local.tags
+}
+
+################################################################################
+# JupyterHub
+################################################################################
+
+resource "helm_release" "jupyterhub"{
+  name = "jhub-release"
+  repository = "https://jupyterhub.github.io/helm-chart/"
+  chart = "jupyterhub"
+  version = "2.0.0"
+  namespace = "jhub"
+  create_namespace = "true"
+
+  values = [
+    "$(file("config.yaml"))"
+  ]
 }
 
 ################################################################################

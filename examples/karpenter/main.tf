@@ -204,7 +204,7 @@ resource "helm_release" "jupyterhub"{
   create_namespace = "true"
 
   values = [
-    "$(file("config.yaml"))"
+    "${file("config.yaml")}"
   ]
 }
 

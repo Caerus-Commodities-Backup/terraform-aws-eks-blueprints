@@ -24,40 +24,39 @@ fullnameOverride: ""
 global:
   safeToShowValues: false
 hub:
-  activeServerLimit: null
   allowNamedServers: false
   annotations: {}
   args: []
-  authenticatePrometheus: null
   baseUrl: /
   command: []
   concurrentSpawnLimit: 64
   config:
+    GitHubOAuthenticator:
+      client_id: b69c1ad0d24929612d1f
+      client_secret: f7503501811cf1b54c30a35e68d46f197a0b252f
+      oauth_callback_url: https://jupyter.caerus-gateway.com/hub/oauth_callback
     JupyterHub:
       admin_access: true
-      authenticator_class: dummy
+      allowed_organizations:
+      - caeruscommodities-risk
+      authenticator_class: github
+      scope:
+      - read:org
   consecutiveFailureLimit: 5
   containerSecurityContext:
     allowPrivilegeEscalation: false
     runAsGroup: 1000
     runAsUser: 1000
-  cookieSecret: null
   db:
-    password: null
     pvc:
       accessModes:
       - ReadWriteOnce
       annotations: {}
       selector: {}
       storage: 1Gi
-      storageClassName: null
-      subPath: null
     type: sqlite-pvc
-    upgrade: null
-    url: null
   deploymentStrategy:
     type: Recreate
-  existingSecret: null
   extraConfig: {}
   extraContainers: []
   extraEnv: {}
@@ -67,7 +66,6 @@ hub:
   extraVolumes: []
   image:
     name: jupyterhub/k8s-hub
-    pullPolicy: null
     pullSecrets: []
     tag: 2.0.0
   initContainers: []
@@ -80,7 +78,6 @@ hub:
     periodSeconds: 10
     timeoutSeconds: 3
   loadRoles: {}
-  namedServerLimitPerUser: null
   networkPolicy:
     allowedIngressPorts: []
     egress: []
@@ -95,7 +92,6 @@ hub:
   nodeSelector: {}
   pdb:
     enabled: false
-    maxUnavailable: null
     minAvailable: 1
   podSecurityContext:
     fsGroup: 1000
@@ -105,42 +101,29 @@ hub:
     initialDelaySeconds: 0
     periodSeconds: 2
     timeoutSeconds: 1
-  redirectToServer: null
   resources: {}
-  revisionHistoryLimit: null
   service:
     annotations: {}
     extraPorts: []
-    loadBalancerIP: null
-    ports:
-      nodePort: null
+    ports: {}
     type: ClusterIP
   serviceAccount:
     annotations: {}
     create: true
-    name: null
   services: {}
-  shutdownOnLogout: null
   templatePaths: []
   templateVars: {}
   tolerations: []
 imagePullSecret:
   automaticReferenceInjection: true
   create: false
-  email: null
-  password: null
-  registry: null
-  username: null
 imagePullSecrets: []
 ingress:
   annotations: {}
   enabled: false
   hosts: []
-  ingressClassName: null
-  pathSuffix: null
   pathType: Prefix
   tls: []
-nameOverride: null
 prePuller:
   annotations: {}
   containerSecurityContext:
@@ -159,7 +142,6 @@ prePuller:
     enabled: true
     image:
       name: jupyterhub/k8s-image-awaiter
-      pullPolicy: null
       pullSecrets: []
       tag: 2.0.0
     nodeSelector: {}
@@ -169,7 +151,6 @@ prePuller:
     serviceAccount:
       annotations: {}
       create: true
-      name: null
     tolerations: []
   labels: {}
   pause:
@@ -179,12 +160,10 @@ prePuller:
       runAsUser: 65534
     image:
       name: k8s.gcr.io/pause
-      pullPolicy: null
       pullSecrets: []
       tag: "3.8"
   pullProfileListImages: true
   resources: {}
-  revisionHistoryLimit: null
 proxy:
   annotations: {}
   chp:
@@ -192,14 +171,11 @@ proxy:
       allowPrivilegeEscalation: false
       runAsGroup: 65534
       runAsUser: 65534
-    defaultTarget: null
-    errorTarget: null
     extraCommandLineFlags: []
     extraEnv: {}
     extraPodSpec: {}
     image:
       name: jupyterhub/configurable-http-proxy
-      pullPolicy: null
       pullSecrets: []
       tag: 4.5.3
     livenessProbe:
@@ -224,7 +200,6 @@ proxy:
     nodeSelector: {}
     pdb:
       enabled: false
-      maxUnavailable: null
       minAvailable: 1
     readinessProbe:
       enabled: true
@@ -233,24 +208,20 @@ proxy:
       periodSeconds: 2
       timeoutSeconds: 1
     resources: {}
-    revisionHistoryLimit: null
     tolerations: []
   deploymentStrategy:
-    rollingUpdate: null
     type: Recreate
   https:
-    enabled: false
-    hosts: []
+    enabled: true
+    hosts:
+    - jupyter.caerus-gateway.com
     letsencrypt:
       acmeServer: https://acme-v02.api.letsencrypt.org/directory
-      contactEmail: null
-    manual:
-      cert: null
-      key: null
+      contactEmail: kmorgan@caeruscommodities.com
+    manual: {}
     secret:
       crt: tls.crt
       key: tls.key
-      name: null
     type: letsencrypt
   labels: {}
   secretSync:
@@ -260,21 +231,16 @@ proxy:
       runAsUser: 65534
     image:
       name: jupyterhub/k8s-secret-sync
-      pullPolicy: null
       pullSecrets: []
       tag: 2.0.0
     resources: {}
-  secretToken: null
   service:
     annotations: {}
     disableHttpPort: false
     extraPorts: []
     labels: {}
-    loadBalancerIP: null
     loadBalancerSourceRanges: []
-    nodePorts:
-      http: null
-      https: null
+    nodePorts: {}
     type: LoadBalancer
   traefik:
     containerSecurityContext:
@@ -295,7 +261,6 @@ proxy:
       preload: false
     image:
       name: traefik
-      pullPolicy: null
       pullSecrets: []
       tag: v2.8.4
     labels: {}
@@ -315,14 +280,11 @@ proxy:
     nodeSelector: {}
     pdb:
       enabled: false
-      maxUnavailable: null
       minAvailable: 1
     resources: {}
-    revisionHistoryLimit: null
     serviceAccount:
       annotations: {}
       create: true
-      name: null
     tolerations: []
 rbac:
   create: true
@@ -354,13 +316,11 @@ scheduling:
     enabled: true
     image:
       name: k8s.gcr.io/pause
-      pullPolicy: null
       pullSecrets: []
       tag: "3.8"
     labels: {}
     replicas: 0
     resources: {}
-    revisionHistoryLimit: null
   userPods:
     nodeAffinity:
       matchNodePurpose: prefer
@@ -383,7 +343,6 @@ scheduling:
     extraPodSpec: {}
     image:
       name: k8s.gcr.io/kube-scheduler
-      pullPolicy: null
       pullSecrets: []
       tag: v1.23.10
     labels: {}
@@ -392,7 +351,6 @@ scheduling:
     pdb:
       enabled: true
       maxUnavailable: 1
-      minAvailable: null
     pluginConfig:
     - args:
         scoringStrategy:
@@ -422,11 +380,9 @@ scheduling:
           weight: 11
     replicas: 2
     resources: {}
-    revisionHistoryLimit: null
     serviceAccount:
       annotations: {}
       create: true
-      name: null
     tolerations: []
 singleuser:
   allowPrivilegeEscalation: false
@@ -434,10 +390,7 @@ singleuser:
     blockWithIptables: true
     ip: 169.254.169.254
   cmd: jupyterhub-singleuser
-  cpu:
-    guarantee: null
-    limit: null
-  defaultUrl: null
+  cpu: {}
   events: true
   extraAnnotations: {}
   extraContainers: []
@@ -461,15 +414,14 @@ singleuser:
   extraTolerations: []
   fsGid: 100
   image:
-    name: jupyterhub/k8s-singleuser-sample
-    pullPolicy: null
+    name: kmorgancaerus/datascience-notebook
+    pullPolicy: Always
     pullSecrets: []
-    tag: 2.0.0
+    tag: 0.0.7
   initContainers: []
   lifecycleHooks: {}
   memory:
     guarantee: 1G
-    limit: null
   networkPolicy:
     allowedIngressPorts: []
     egress: []
@@ -484,14 +436,11 @@ singleuser:
   networkTools:
     image:
       name: jupyterhub/k8s-network-tools
-      pullPolicy: null
       pullSecrets: []
       tag: 2.0.0
     resources: {}
   nodeSelector: {}
-  podNameTemplate: null
   profileList: []
-  serviceAccountName: null
   startTimeout: 300
   storage:
     capacity: 10Gi
@@ -499,14 +448,12 @@ singleuser:
       pvcNameTemplate: claim-{username}{servername}
       storageAccessModes:
       - ReadWriteOnce
-      storageClass: null
       volumeNameTemplate: volume-{username}{servername}
     extraLabels: {}
     extraVolumeMounts: []
     extraVolumes: []
     homeMountPath: /home/jovyan
     static:
-      pvcName: null
       subPath: '{username}'
     type: dynamic
   uid: 1000

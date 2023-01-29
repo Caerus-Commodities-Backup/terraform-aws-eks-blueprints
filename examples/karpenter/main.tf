@@ -40,6 +40,11 @@ data "aws_ecrpublic_authorization_token" "token" {
 
 data "aws_availability_zones" "available" {}
 
+# data "aws_acm_certificate" "issued" {
+#   domain   = var.acm_certificate_domain
+#   statuses = ["ISSUED"]
+# }
+
 locals {
   name   = "caerus"
   region = "us-east-2"
@@ -60,10 +65,10 @@ locals {
 #tfsec:ignore:aws-eks-enable-control-plane-logging
 module "eks" {
   source  = "terraform-aws-modules/eks/aws"
-  version = "~> 19.5.0"
+  version = "~> 19.5.1"
 
   cluster_name                   = local.name
-  cluster_version                = "1.23"
+  cluster_version                = "1.24"
   cluster_endpoint_public_access = true
 
   cluster_addons = {
@@ -179,12 +184,32 @@ module "eks_blueprints_kubernetes_addons" {
   karpenter_enable_spot_termination_handling = true
   karpenter_sqs_queue_arn                    = module.karpenter.queue_arn
 
+  # EKS Managed Add-ons
+  # enable_amazon_eks_vpc_cni            = true
+  # enable_amazon_eks_coredns            = true
+  # enable_amazon_eks_kube_proxy         = true
+  # enable_amazon_eks_aws_ebs_csi_driver = true
+
+  # Add-ons
+  enable_aws_load_balancer_controller = true
+  # enable_metrics_server               = true
+  # enable_aws_cloudwatch_metrics       = true
+  # enable_kubecost                     = true
+  # enable_gatekeeper                   = true
+
   # ---------------------------------------
   
   # added by ksm
-  enable_kuberay_operator             = true
-  enable_ingress_nginx                = true
-  enable_aws_load_balancer_controller = true
+  # enable_kuberay_operator             = true
+  # enable_ingress_nginx                = true
+  # enable_aws_load_balancer_controller = true
+  
+  # ingress_nginx_helm_config = {
+  #   values = [templatefile("${path.module}/nginx-values.yaml", {
+  #     hostname     = var.eks_cluster_domain
+  #     ssl_cert_arn = data.aws_acm_certificate.issued.arn
+  #   })]
+  # }
   
   # -----------------------------------------
 
@@ -215,7 +240,7 @@ resource "helm_release" "jupyterhub"{
 # Creates Karpenter native node termination handler resources and IAM instance profile
 module "karpenter" {
   source  = "terraform-aws-modules/eks/aws//modules/karpenter"
-  version = "~> 19.5"
+  version = "~> 19.5.1"
 
   cluster_name           = module.eks.cluster_name
   irsa_oidc_provider_arn = module.eks.oidc_provider_arn
@@ -237,7 +262,7 @@ resource "kubectl_manifest" "karpenter_provisioner" {
           values: ["c", "m"]
         - key: "karpenter.k8s.aws/instance-cpu"
           operator: In
-          values: ["8", "16", "32"]
+          values: ["5", "8", "16", "32"]
         - key: "karpenter.k8s.aws/instance-hypervisor"
           operator: In
           values: ["nitro"]

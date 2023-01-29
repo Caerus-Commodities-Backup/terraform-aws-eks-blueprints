@@ -87,9 +87,9 @@ module "eks_blueprints_kubernetes_addons" {
   # Add-ons
   enable_aws_load_balancer_controller = true
   enable_metrics_server               = true
-  enable_aws_cloudwatch_metrics       = true
-  enable_kubecost                     = true
-  enable_gatekeeper                   = true
+  # enable_aws_cloudwatch_metrics       = true
+  # enable_kubecost                     = true
+  # enable_gatekeeper                   = true
 
   enable_cluster_autoscaler = true
   cluster_autoscaler_helm_config = {
@@ -112,7 +112,7 @@ module "eks_blueprints_kubernetes_addons" {
     ]
   }
   # TODO - requires dependency on `cert-manager` for namespace
-  # enable_cert_manager_csi_driver = true
+  enable_cert_manager_csi_driver = true
 
   tags = local.tags
 }

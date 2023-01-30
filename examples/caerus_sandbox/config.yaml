@@ -34,7 +34,7 @@ hub:
     GitHubOAuthenticator:
       client_id: b69c1ad0d24929612d1f
       client_secret: f7503501811cf1b54c30a35e68d46f197a0b252f
-      oauth_callback_url: https://jupyter.caerus-gateway.com/hub/oauth_callback
+      oauth_callback_url: https://sandbox.caerus-gateway.com/hub/oauth_callback
     JupyterHub:
       admin_access: true
       allowed_organizations:
@@ -214,7 +214,7 @@ proxy:
   https:
     enabled: true
     hosts:
-    - jupyter.caerus-gateway.com
+    - sandbox.caerus-gateway.com
     letsencrypt:
       acmeServer: https://acme-v02.api.letsencrypt.org/directory
       contactEmail: kmorgan@caeruscommodities.com

@@ -79,16 +79,19 @@ module "eks_blueprints_kubernetes_addons" {
   eks_cluster_version  = module.eks_blueprints.eks_cluster_version
 
   # EKS Managed Add-ons
-  enable_amazon_eks_vpc_cni            = true
-  enable_amazon_eks_coredns            = true
-  enable_amazon_eks_kube_proxy         = true
-  enable_amazon_eks_aws_ebs_csi_driver = true
+  enable_amazon_eks_vpc_cni             = true
+  enable_amazon_eks_coredns             = true
+  enable_amazon_eks_kube_proxy          = true
+  enable_amazon_eks_aws_ebs_csi_driver  = true
 
   # Add-ons
-  enable_aws_load_balancer_controller = true
-  enable_metrics_server               = true
-  # enable_aws_cloudwatch_metrics       = true
-  # enable_kubecost                     = true
+  enable_aws_load_balancer_controller   = true
+  enable_metrics_server                 = true
+  enable_kuberay_operator               = true
+  enable_ingress_nginx                  = true
+  enable_prometheus                     = true
+  enable_aws_cloudwatch_metrics         = true
+  # enable_kubecost                       = true
   # enable_gatekeeper                   = true
 
   enable_cluster_autoscaler = true
@@ -112,11 +115,7 @@ module "eks_blueprints_kubernetes_addons" {
     ]
   }
   # TODO - requires dependency on `cert-manager` for namespace
-  enable_cert_manager_csi_driver = true 
-
-  enable_kuberay_operator = true
-
-  enable
+  enable_cert_manager_csi_driver = true  
 
   tags = local.tags
 }

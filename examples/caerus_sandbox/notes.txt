@@ -1,0 +1,4 @@
+Kube cost -- if there is a port clash, edit demonset config and change
+    hostPort from 9100 to 49152 (for example)
+    hostNework from true to false
+

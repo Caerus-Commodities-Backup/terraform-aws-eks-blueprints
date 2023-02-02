@@ -34,6 +34,8 @@ locals {
   cluster_name = coalesce(var.cluster_name, local.name)
   region       = "us-east-2"
 
+  node_group_name = "managed-ondemand"
+
   vpc_cidr = "10.0.0.0/16"
   azs      = slice(data.aws_availability_zones.available.names, 0, 3)
 
@@ -60,14 +62,15 @@ module "eks_blueprints" {
     mg_5 = {
       node_group_name = "managed-ondemand"
       instance_types  = ["m5.large"]
-      min_size        = 3
+      min_size        = 2
       max_size        = 5
-      desired_size    = 3
+      desired_size    = 2
       subnet_ids      = module.vpc.private_subnets
     }
   }
 
-  tags = local.tags
+tags = local.tags
+
 }
 
 module "eks_blueprints_kubernetes_addons" {
@@ -86,25 +89,21 @@ module "eks_blueprints_kubernetes_addons" {
 
   # Add-ons
   enable_aws_load_balancer_controller   = true
-  enable_metrics_server                 = true
   enable_kuberay_operator               = true
-  enable_ingress_nginx                  = true
+  enable_ingress_nginx                  = true 
   enable_prometheus                     = true
-  enable_aws_cloudwatch_metrics         = true
-  # enable_kubecost                       = true
-  # enable_gatekeeper                   = true
 
-  enable_cluster_autoscaler = true
-  cluster_autoscaler_helm_config = {
-    set = [
-      {
-        name  = "podLabels.prometheus\\.io/scrape",
-        value = "true",
-        type  = "string",
-      }
-    ]
+  enable_karpenter                      = true
+  karpenter_helm_config = {
+    awsInterruptionQueueName = data.aws_arn.queue.resource
+    awsDefaultInstanceProfile = "${local.name}-${local.node_group_name}"
   }
-
+  karpenter_node_iam_instance_profile        = module.karpenter.instance_profile_name
+  karpenter_enable_spot_termination_handling = true
+  karpenter_sqs_queue_arn                    = module.karpenter.queue_arn
+  
+  # TODO - requires dependency on `cert-manager` for namespace
+  enable_cert_manager_csi_driver = true
   enable_cert_manager = true
   cert_manager_helm_config = {
     set_values = [
@@ -114,11 +113,29 @@ module "eks_blueprints_kubernetes_addons" {
       },
     ]
   }
-  # TODO - requires dependency on `cert-manager` for namespace
-  enable_cert_manager_csi_driver = true  
 
   tags = local.tags
 }
+
+################################################################################
+# Karpenter
+################################################################################
+
+data "aws_arn" "queue" {
+  arn = module.karpenter.queue_arn
+}
+
+# Creates Karpenter native node termination handler resources and IAM instance profile
+module "karpenter" {
+  source  = "terraform-aws-modules/eks/aws//modules/karpenter"
+  version = "~> 19.5"
+
+  cluster_name           = local.name
+  create_irsa            = false # IRSA will be created by the kubernetes-addons module
+
+  tags = local.tags
+}
+
 
 ################################################################################
 # JupyterHub
